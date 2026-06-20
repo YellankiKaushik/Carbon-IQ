@@ -185,7 +185,9 @@ pnpm build
 
 ## Deployment Notes
 
-The project is a static Vite app and can be deployed to Vercel, Netlify, GitHub Pages, or any static host. Configure `VITE_GEMINI_API_KEY` and/or `VITE_OPENROUTER_API_KEY` in the host environment only if AI-powered insights are desired.
+The project is a static Vite app. Preferred Google deployment paths are Firebase Hosting or Google Cloud Run static hosting. Configure `VITE_GEMINI_API_KEY` and/or `VITE_OPENROUTER_API_KEY` in the Google deployment environment only if AI-powered insights are desired.
+
+Preferred Google deployment path for this submission is Firebase Hosting because the app builds to a static `dist` directory.
 
 Build command:
 
@@ -197,6 +199,24 @@ Output directory:
 
 ```txt
 dist
+```
+
+Firebase Hosting settings:
+
+```txt
+Install command: pnpm install
+Build command: pnpm build
+Public directory: dist
+Single-page app rewrite: yes
+```
+
+Manual Firebase deploy:
+
+```bash
+firebase login
+firebase use <PROJECT_ID>
+pnpm build
+firebase deploy
 ```
 
 ## Manual QA Checklist
