@@ -4,6 +4,8 @@ CarbonIQ is a personal carbon footprint awareness platform for PromptWars Virtua
 
 GitHub repository: https://github.com/YellankiKaushik/Carbon-IQ
 
+Live demo: https://carbon-iq-1994a.web.app
+
 ## Challenge
 
 Design a solution that helps individuals understand, track, and reduce their carbon footprint through simple actions and personalized insights.
@@ -189,6 +191,14 @@ The project is a static Vite app. Preferred Google deployment paths are Firebase
 
 Preferred Google deployment path for this submission is Firebase Hosting because the app builds to a static `dist` directory.
 
+Deployment:
+
+- Platform: Firebase Hosting
+- Firebase project: carbon-iq-1994a
+- Build command: `pnpm build`
+- Output directory: `dist`
+- Live URL: https://carbon-iq-1994a.web.app
+
 Build command:
 
 ```bash
@@ -218,6 +228,10 @@ firebase use <PROJECT_ID>
 pnpm build
 firebase deploy
 ```
+
+## Repository
+
+https://github.com/YellankiKaushik/Carbon-IQ
 
 ## Manual QA Checklist
 
@@ -257,11 +271,11 @@ firebase deploy
 
 ## Screenshots
 
-Placeholder: add landing, dashboard, challenge, leaderboard, and story card screenshots before final submission.
+Screenshots will be added after final UI testing and bug-fix pass.
 
 ## Live Demo
 
-Placeholder: add deployed preview link.
+[Open CarbonIQ](https://carbon-iq-1994a.web.app)
 
 ## LinkedIn Build-in-Public Post
 
