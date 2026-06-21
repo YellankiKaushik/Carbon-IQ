@@ -209,7 +209,11 @@ export default function Dashboard() {
                     <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Breakdown</h3>
                         <div className="flex flex-col sm:flex-row items-center gap-6">
-                            <div className="w-44 h-44 flex-shrink-0">
+                            <div
+                                className="w-44 h-44 flex-shrink-0"
+                                role="img"
+                                aria-label={`Carbon footprint category chart. Largest category is ${getCategoryLabel(footprint.biggest_category)}.`}
+                            >
                                 <PieChart width={176} height={176}>
                                     <Pie
                                         data={pieData}

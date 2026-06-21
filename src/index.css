@@ -12,6 +12,11 @@
     body {
         font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
+
+    :focus-visible {
+        outline: 3px solid #059669;
+        outline-offset: 3px;
+    }
 }
 
 @layer components {

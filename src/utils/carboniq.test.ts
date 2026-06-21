@@ -285,6 +285,7 @@ describe('Firebase Analytics helpers', () => {
         expect(CARBONIQ_ANALYTICS_EVENTS).toContain('ai_insight_generated');
         expect(CARBONIQ_ANALYTICS_EVENTS).toContain('story_app_link_copied');
         expect(CARBONIQ_ANALYTICS_EVENTS).toHaveLength(16);
+        expect(new Set(CARBONIQ_ANALYTICS_EVENTS).size).toBe(CARBONIQ_ANALYTICS_EVENTS.length);
         expect(CARBONIQ_ANALYTICS_EVENTS.every((eventName) => /^[a-z0-9_]+$/.test(eventName))).toBe(true);
     });
 

@@ -150,6 +150,7 @@ export default function Quiz() {
                             </p>
                             <input
                                 type="text"
+                                aria-label="Enter your display name"
                                 value={nameValue}
                                 onChange={(e) => setNameValue(e.target.value.slice(0, 30))}
                                 placeholder="Enter your name"

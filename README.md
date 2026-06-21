@@ -10,9 +10,34 @@ Live demo: https://carbon-iq-1994a.web.app
 
 Design a solution that helps individuals understand, track, and reduce their carbon footprint through simple actions and personalized insights.
 
+## Challenge Alignment
+
+| Challenge Requirement | CarbonIQ Implementation |
+|---|---|
+| Understand carbon footprint | Lifestyle quiz, category breakdown, carbon dashboard |
+| Track carbon footprint | localStorage progress, challenge state, check-ins, CO2 saved |
+| Reduce carbon footprint | One Lever AI insight and personalized challenge |
+| Simple actions | One high-impact action instead of many generic tips |
+| Personalized insights | Gemini -> OpenRouter -> static fallback AI recommendation |
+| Accessibility | Keyboard-friendly navigation, readable UI, responsive design |
+| Testing | Vitest logic tests, TypeScript check, production build |
+| Deployment | Firebase Hosting on Google/Firebase infrastructure |
+
 ## Problem Statement
 
 People often see climate advice as generic, overwhelming, or disconnected from their own lifestyle. CarbonIQ gives individuals a quick estimated footprint, highlights the category driving the most impact, and turns that result into one practical action they can track.
+
+CarbonIQ directly solves the Carbon Footprint Awareness Platform challenge by helping users understand, track, and reduce their lifestyle footprint through personalized insights and simple actions.
+
+## Solution Overview
+
+CarbonIQ is not just a carbon calculator. It turns footprint awareness into an action loop:
+
+1. A short quiz estimates lifestyle footprint across transport, food, home energy, shopping, and travel.
+2. A dashboard explains annual/monthly footprint, category percentages, and carbon budget.
+3. The AI One Lever system selects one high-impact personalized action.
+4. A challenge/check-in flow turns advice into a repeatable habit.
+5. A leaderboard and story card make progress visible and shareable.
 
 ## Chosen Vertical
 
@@ -58,8 +83,20 @@ Reviewers can also click "View Demo Dashboard" to skip directly into a realistic
 - Recharts
 - Lucide React
 - html-to-image
+- Firebase Hosting
+- Gemini API
+- OpenRouter API fallback
 - Firebase Analytics
 - Vitest
+
+## Google Services Used
+
+- Firebase Hosting
+- Firebase project: carbon-iq-1994a
+- Firebase CLI deployment workflow
+- Gemini API as primary AI provider
+- Google AI Studio API key workflow
+- Google Analytics for Firebase
 
 ## Architecture
 
@@ -124,6 +161,14 @@ The app remains fully usable without any API keys.
 
 The calculator uses internally consistent demo emission factors in kg CO2/year. Values are approximate and designed for awareness, not audit-grade reporting. The monthly carbon budget is set at 80% of current estimated monthly footprint to create a simple reduction target.
 
+## Firebase Analytics Event Tracking
+
+CarbonIQ uses Google Analytics for Firebase through a typed wrapper in `src/utils/analytics.ts`. Events are product-level only and help understand funnel completion and engagement without logging personal data.
+
+Tracked events include app load, landing view, demo dashboard view, quiz start/completion, dashboard view, AI insight generation/retry, challenge join, check-in completion, duplicate check-in blocking, leaderboard view, story-card view, story download, caption copy, and app-link copy.
+
+Safe parameters are limited to values such as `mode`, `source`, `ai_source`, normalized `largest_category`, deployment, project, streak, and footprint/savings bands.
+
 ## Data and State Model
 
 Persisted demo data includes:
@@ -143,8 +188,10 @@ No account system or personal data beyond an optional display name is stored.
 - Semantic buttons and headings.
 - Keyboard-accessible quiz answer cards.
 - Inline validation for missing answers.
+- Explicit focus-visible ring for keyboard users.
+- Display-name input has an accessible label.
+- Dashboard chart has a text label and supporting category summary.
 - Text summaries alongside charts.
-- Clear focus styles from browser/Tailwind defaults.
 - Responsive layouts and mobile-friendly tap targets.
 - Estimate disclaimers throughout the flow.
 
@@ -264,6 +311,7 @@ https://github.com/YellankiKaushik/Carbon-IQ
 
 - [Project Explanation](docs/PROJECT_EXPLANATION.md)
 - [Technical Documentation](docs/TECHNICAL_DOCUMENTATION.md)
+- [Screenshot Notes](docs/screenshots/README.md)
 
 ## Manual QA Checklist
 
@@ -301,10 +349,31 @@ https://github.com/YellankiKaushik/Carbon-IQ
 - Add optional anonymous cloud sync.
 - Add more robust story-card image templates.
 - Add automated UI accessibility checks.
+- Move AI provider calls behind Firebase Functions or Cloud Run for production-grade key protection.
 
 ## Screenshots
 
-Screenshots will be added after final UI testing and bug-fix pass.
+Real screenshots are not committed yet. The folder `docs/screenshots/` has been created with capture instructions and recommended filenames.
+
+Planned real screenshots:
+
+- Landing page
+- Quiz flow
+- Dashboard
+- One Lever AI insight
+- Challenge check-in
+- Leaderboard
+- Story card
+
+Do not add mock screenshots. Only add images captured from the real local or live app.
+
+## Limitations
+
+- Carbon values are awareness estimates, not audit-grade measurements.
+- User progress is stored in localStorage rather than a backend database.
+- Community leaderboard data is seeded sample data.
+- Frontend-only Vite environment variables are browser-visible after build.
+- Gemini can hit quota/rate limits; OpenRouter and static fallback keep the user flow stable.
 
 ## Live Demo
 
