@@ -244,6 +244,11 @@ firebase deploy --only hosting
 
 https://github.com/YellankiKaushik/Carbon-IQ
 
+## Documentation
+
+- [Project Explanation](docs/PROJECT_EXPLANATION.md)
+- [Technical Documentation](docs/TECHNICAL_DOCUMENTATION.md) - coming soon
+
 ## Manual QA Checklist
 
 - Landing page loads.
