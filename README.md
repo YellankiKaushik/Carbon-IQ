@@ -1,6 +1,6 @@
 # CarbonIQ
 
-CarbonIQ is a personal carbon footprint awareness platform for PromptWars Virtual - Challenge 3 Carbon Footprint Awareness Platform.
+CarbonIQ is a personal carbon footprint awareness platform for PromptWars Virtual - Challenge 3: Carbon Footprint Awareness Platform.
 
 GitHub repository: https://github.com/YellankiKaushik/Carbon-IQ
 
@@ -24,23 +24,28 @@ Most carbon calculators stop at a score. CarbonIQ turns the result into one clea
 
 ## Key Features
 
-- Landing page with quiz CTA and demo dashboard shortcut.
+- Expanded landing page with product value proposition, problem framing, workflow, and AI/Firebase notes.
+- Consistent app navigation with Home, dashboard tabs, quiz previous controls, and recalculate entry points.
+- Clearly labeled demo dashboard with sample-data banner and "Calculate My Real Footprint" CTA.
 - Optional display name with safe fallback to "You".
 - Seven-question carbon quiz with validation and progress.
 - Rule-based estimated annual and monthly footprint calculator.
 - Category breakdown for transport, food, home energy, and consumption.
 - Monthly carbon budget gauge set to an 80% reduction target.
+- Personalized dashboard summary cards, category percentages, community sample snapshot, and challenge progress.
 - One Lever insight from Gemini first, OpenRouter second, and deterministic fallback when APIs are unavailable.
+- AI provider badge and an expandable explanation of how the insight was generated.
 - Challenge tracking with streak, daily duplicate prevention, and total CO2 saved.
 - Leaderboard ranked by total CO2 saved, not lowest footprint.
-- Shareable Carbon Story card with caption copy and PNG download support.
+- Shareable Carbon Story card with user name, annual footprint, One Lever action, savings, streak, rank, clean filename, caption copy, app-link copy, and PNG download support.
 - localStorage persistence for demo continuity.
+- Responsive layouts tuned for phone, tablet, and desktop review flows.
 
 ## User Flow
 
 Landing -> Carbon Quiz -> Footprint Dashboard -> One Lever Insight -> Join Challenge -> Check In -> Leaderboard -> Carbon Story Card.
 
-Reviewers can also click "View Demo Dashboard" to skip directly into a realistic preloaded dashboard.
+Reviewers can also click "View Demo Dashboard" to skip directly into a realistic preloaded dashboard. Demo mode is explicitly labeled so sample data is not confused with a real user result.
 
 ## Tech Stack
 
@@ -187,9 +192,7 @@ pnpm build
 
 ## Deployment Notes
 
-The project is a static Vite app. Preferred Google deployment paths are Firebase Hosting or Google Cloud Run static hosting. Configure `VITE_GEMINI_API_KEY` and/or `VITE_OPENROUTER_API_KEY` in the Google deployment environment only if AI-powered insights are desired.
-
-Preferred Google deployment path for this submission is Firebase Hosting because the app builds to a static `dist` directory.
+The project is a static Vite app deployed to Firebase Hosting. Configure `VITE_GEMINI_API_KEY` and/or `VITE_OPENROUTER_API_KEY` before building if AI-powered insights are desired.
 
 Deployment:
 
@@ -226,8 +229,16 @@ Manual Firebase deploy:
 firebase login
 firebase use <PROJECT_ID>
 pnpm build
-firebase deploy
+firebase deploy --only hosting
 ```
+
+## Security Notes
+
+- Real API keys belong only in `.env.local`.
+- `.env` and `.env.local` must never be committed.
+- `.env.example` intentionally contains placeholders only.
+- `dist`, `node_modules`, and `.firebase` are generated or local files and should stay uncommitted.
+- Because this hackathon MVP is frontend-only, Vite environment variables are embedded in the browser bundle. A production version should proxy AI calls through Firebase Functions, Cloud Run, or another trusted backend.
 
 ## Repository
 
@@ -236,8 +247,8 @@ https://github.com/YellankiKaushik/Carbon-IQ
 ## Manual QA Checklist
 
 - Landing page loads.
-- "Calculate Your Carbon IQ" starts the quiz.
-- "View Demo Dashboard" opens a populated dashboard.
+- "Calculate Your CarbonIQ" starts the quiz.
+- "View Demo Dashboard" opens a clearly labeled sample dashboard.
 - Quiz requires an option before continuing.
 - Quiz completes after all seven questions.
 - Dashboard renders the total estimate, chart, category breakdown, and budget gauge.
@@ -249,6 +260,7 @@ https://github.com/YellankiKaushik/Carbon-IQ
 - Current user is highlighted on the leaderboard.
 - Story card preview and caption appear.
 - Copy caption works.
+- Copy app link works.
 - Download card either downloads a PNG or shows the graceful fallback message.
 - Refresh preserves state through localStorage.
 - Mobile layout remains readable and tappable.

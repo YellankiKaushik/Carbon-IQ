@@ -11,6 +11,7 @@ import type {
 import { calculateFootprint, getDemoFootprint } from '../utils/calculator';
 import { generateOneLeverInsight, getDemoInsight } from '../utils/aiInsight';
 import { applyChallengeCheckIn, createChallengeFromInsight } from '../utils/challengeLogic';
+import { sanitizeDisplayName } from '../utils/profile';
 
 interface AppState {
     user: UserProfile | null;
@@ -37,6 +38,8 @@ interface AppState {
 
     currentPage: string;
     setPage: (page: string) => void;
+    isDemoMode: boolean;
+    setDemoMode: (value: boolean) => void;
 
     quizSubmitting: boolean;
     setQuizSubmitting: (v: boolean) => void;
@@ -75,11 +78,6 @@ function removeFromStorage(key: string) {
     }
 }
 
-function sanitizeDisplayName(name: string): string {
-    const sanitized = name.replace(/[<>]/g, '').replace(/\s+/g, ' ').trim().slice(0, 30);
-    return sanitized || 'You';
-}
-
 const demoAnswers: QuizAnswers = {
     commute_mode: 'car',
     commute_days: '4-5',
@@ -111,17 +109,19 @@ export const useAppStore = create<AppState>((set, get) => ({
         });
     },
     resetQuiz: () => {
-        set({ quizAnswers: {}, footprint: null, insight: null, quizSubmitting: false });
+        set({ quizAnswers: {}, footprint: null, insight: null, quizSubmitting: false, isDemoMode: false });
         removeFromStorage('quizAnswers');
         removeFromStorage('footprint');
         removeFromStorage('insight');
+        saveToStorage('isDemoMode', false);
     },
 
     footprint: null,
     calculateQuizFootprint: () => {
         const footprint = calculateFootprint(get().quizAnswers as QuizAnswers);
-        set({ footprint });
+        set({ footprint, isDemoMode: false });
         saveToStorage('footprint', footprint);
+        saveToStorage('isDemoMode', false);
     },
 
     insight: null,
@@ -186,6 +186,11 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     currentPage: 'landing',
     setPage: (page: string) => set({ currentPage: page }),
+    isDemoMode: false,
+    setDemoMode: (value: boolean) => {
+        set({ isDemoMode: value });
+        saveToStorage('isDemoMode', value);
+    },
 
     quizSubmitting: false,
     setQuizSubmitting: (v: boolean) => set({ quizSubmitting: v }),
@@ -199,6 +204,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             challenge: null,
             checkIns: [],
             currentPage: 'landing',
+            isDemoMode: false,
             quizSubmitting: false,
             insightLoading: false,
         });
@@ -231,6 +237,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             challenge: null,
             checkIns: [],
             currentPage: 'dashboard',
+            isDemoMode: true,
             quizSubmitting: false,
             insightLoading: false,
         });
@@ -239,6 +246,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         saveToStorage('quizAnswers', demoAnswers);
         saveToStorage('footprint', footprint);
         saveToStorage('insight', insight);
+        saveToStorage('isDemoMode', true);
         removeFromStorage('challenge');
         removeFromStorage('checkIns');
     },
@@ -250,7 +258,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         const insight = loadFromStorage<AIInsightResponse | null>('insight', null);
         const challenge = loadFromStorage<Challenge | null>('challenge', null);
         const checkIns = loadFromStorage<CheckIn[]>('checkIns', []);
+        const isDemoMode = loadFromStorage<boolean>('isDemoMode', false);
 
-        set({ user, quizAnswers, footprint, insight, challenge, checkIns });
+        set({ user, quizAnswers, footprint, insight, challenge, checkIns, isDemoMode });
     },
 }));

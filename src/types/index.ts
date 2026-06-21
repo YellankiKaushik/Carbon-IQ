@@ -89,10 +89,12 @@ export interface LeaderboardEntry {
 
 export interface StoryCardData {
     total_saved_kg: number;
+    annual_footprint_kg: number;
     biggest_win: string;
     streak_count: number;
     leaderboard_rank: number;
     share_caption: string;
+    download_filename: string;
 }
 
 export interface QuizOption {

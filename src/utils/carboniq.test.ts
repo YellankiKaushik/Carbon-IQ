@@ -4,7 +4,9 @@ import { calculateFootprint } from './calculator';
 import { generateOneLeverInsight, getFallbackInsight, parseAIInsightText } from './aiInsight';
 import { applyChallengeCheckIn, createChallengeFromInsight } from './challengeLogic';
 import { getLeaderboardWithUser } from './leaderboard';
-import { createStoryCardData } from './storyData';
+import { createStoryCardData, createStoryFilename } from './storyData';
+import { possessiveName, sanitizeDisplayName } from './profile';
+import { useAppStore } from '../store/useAppStore';
 
 const answers: QuizAnswers = {
     commute_mode: 'car',
@@ -230,11 +232,41 @@ describe('leaderboard and story data', () => {
             status: 'active',
         };
         const insight = getFallbackInsight(answers, calculateFootprint(answers));
-        const story = createStoryCardData(challenge, insight, 4);
+        const story = createStoryCardData(challenge, insight, 4, 4200, 'Kaushik');
 
         expect(story.total_saved_kg).toBe(18);
         expect(story.streak_count).toBe(3);
         expect(story.leaderboard_rank).toBe(4);
+        expect(story.annual_footprint_kg).toBe(4200);
+        expect(story.download_filename).toBe('carboniq-story-kaushik.png');
         expect(story.share_caption).toContain('18 kg CO2');
+        expect(story.share_caption).toContain('carbon-iq-1994a.web.app');
+    });
+});
+
+describe('personalization helpers and demo mode', () => {
+    it('sanitizes display names and falls back to You', () => {
+        expect(sanitizeDisplayName('  <Kaushik>   Yellanki  ')).toBe('Kaushik Yellanki');
+        expect(sanitizeDisplayName('')).toBe('You');
+        expect(possessiveName('You')).toBe('Your');
+        expect(possessiveName('Kaushik')).toBe("Kaushik's");
+    });
+
+    it('creates clean story filenames with fallback', () => {
+        expect(createStoryFilename('Kaushik Yellanki')).toBe('carboniq-story-kaushik-yellanki.png');
+        expect(createStoryFilename('')).toBe('carboniq-story.png');
+    });
+
+    it('sets demo mode for sample dashboards and clears it on real calculation', () => {
+        useAppStore.getState().resetAll();
+        useAppStore.getState().loadDemoState();
+
+        expect(useAppStore.getState().isDemoMode).toBe(true);
+        expect(useAppStore.getState().footprint).not.toBeNull();
+
+        useAppStore.getState().calculateQuizFootprint();
+
+        expect(useAppStore.getState().isDemoMode).toBe(false);
+        expect(useAppStore.getState().footprint).not.toBeNull();
     });
 });

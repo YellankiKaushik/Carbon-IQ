@@ -1,12 +1,14 @@
 import { useAppStore } from '../store/useAppStore';
 import { getLeaderboardWithUser } from '../utils/leaderboard';
+import { possessiveName, sanitizeDisplayName } from '../utils/profile';
 import { Trophy, Flame, ArrowLeft, BookOpen, Target, Medal, Info } from 'lucide-react';
 
 export default function Leaderboard() {
     const { user, challenge, setPage } = useAppStore();
-    const userName = user?.display_name || 'You';
+    const userName = sanitizeDisplayName(user?.display_name);
     const totalSaved = challenge?.total_saved_kg || 0;
     const streak = challenge?.streak_count || 0;
+    const ownerLabel = possessiveName(userName);
 
     const { entries, userRank } = getLeaderboardWithUser(userName, totalSaved, streak);
 
@@ -24,9 +26,9 @@ export default function Leaderboard() {
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-full text-amber-700 text-sm font-medium mb-4">
                         <Trophy className="w-4 h-4" />
-                        CO₂ Saved Leaderboard
+                        Sample Community Leaderboard
                     </div>
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">CO₂ Saved Leaderboard</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{ownerLabel} CO2 Saved Rank</h1>
                     <p className="text-gray-500">Ranked by progress, not by lowest footprint.</p>
                 </div>
 
@@ -34,7 +36,7 @@ export default function Leaderboard() {
                 <div className="bg-blue-50 rounded-xl p-4 mb-6 flex items-start gap-3">
                     <Info className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
                     <p className="text-sm text-blue-800">
-                        CarbonIQ ranks people by total CO₂ saved so users are rewarded for improvement, regardless of their starting footprint.
+                        CarbonIQ ranks people by total CO2 saved so users are rewarded for improvement, regardless of their starting footprint. Community names are seeded sample data for demo purposes.
                     </p>
                 </div>
 

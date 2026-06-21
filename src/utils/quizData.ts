@@ -16,10 +16,10 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
         id: 'commute_days',
         question: 'How many days per week do you commute?',
         options: [
-            { value: '0-1', label: '0–1 days' },
-            { value: '2-3', label: '2–3 days' },
-            { value: '4-5', label: '4–5 days' },
-            { value: '6-7', label: '6–7 days' },
+            { value: '0-1', label: '0-1 days' },
+            { value: '2-3', label: '2-3 days' },
+            { value: '4-5', label: '4-5 days' },
+            { value: '6-7', label: '6-7 days' },
         ],
     },
     {
@@ -58,8 +58,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
         question: 'How often do you take flights or long-distance trips?',
         options: [
             { value: 'almost-never', label: 'Almost never' },
-            { value: '1-2-year', label: '1–2 times a year' },
-            { value: '3-5-year', label: '3–5 times a year' },
+            { value: '1-2-year', label: '1-2 times a year' },
+            { value: '3-5-year', label: '3-5 times a year' },
             { value: 'very-frequent', label: 'Very frequently' },
         ],
     },
@@ -71,7 +71,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
             { value: 'save-time', label: 'Save time' },
             { value: 'healthier', label: 'Healthier lifestyle' },
             { value: 'low-effort', label: 'Low-effort habit change' },
-            { value: 'biggest-impact', label: 'Biggest CO₂ impact' },
+            { value: 'biggest-impact', label: 'Biggest CO2 impact' },
         ],
     },
 ];

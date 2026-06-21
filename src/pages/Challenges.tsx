@@ -1,5 +1,6 @@
 import { useAppStore } from '../store/useAppStore';
 import { getCategoryLabel, getCategoryColor } from '../utils/calculator';
+import { possessiveName, sanitizeDisplayName } from '../utils/profile';
 import { useState } from 'react';
 import {
     Target,
@@ -14,8 +15,10 @@ import {
 } from 'lucide-react';
 
 export default function Challenges() {
-    const { challenge, checkIns, checkIn, resetChallenge, setPage } = useAppStore();
+    const { user, challenge, checkIns, checkIn, resetChallenge, setPage } = useAppStore();
     const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+    const userName = sanitizeDisplayName(user?.display_name);
+    const ownerLabel = possessiveName(userName);
 
     const handleCheckIn = () => {
         const result = checkIn();
@@ -30,7 +33,7 @@ export default function Challenges() {
                         <Target className="w-8 h-8 text-amber-500" />
                     </div>
                     <h2 className="text-xl font-semibold text-gray-900 mb-2">No active challenge yet</h2>
-                    <p className="text-gray-500 mb-6">Join your One Lever action to start tracking CO₂ saved.</p>
+                    <p className="text-gray-500 mb-6">Join your One Lever action to start tracking CO2 saved.</p>
                     <button
                         onClick={() => setPage('dashboard')}
                         className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-all"
@@ -52,8 +55,8 @@ export default function Challenges() {
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Active Challenge</h1>
-                    <p className="text-gray-500">Track your daily actions and watch your CO₂ savings grow.</p>
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{ownerLabel} Active Challenge</h1>
+                    <p className="text-gray-500">Track your daily actions and watch your CO2 savings grow.</p>
                 </div>
 
                 {/* Active Challenge Card */}
@@ -73,7 +76,7 @@ export default function Challenges() {
                                 </span>
                             </div>
                             <p className="text-sm text-gray-500">
-                                {getCategoryLabel(challenge.category)} · Joined {new Date(challenge.joined_at).toLocaleDateString()}
+                                {getCategoryLabel(challenge.category)} - Joined {new Date(challenge.joined_at).toLocaleDateString()}
                             </p>
                         </div>
                     </div>
@@ -88,7 +91,7 @@ export default function Challenges() {
                         <div className="bg-emerald-50 rounded-xl p-4 text-center">
                             <TrendingDown className="w-6 h-6 text-emerald-500 mx-auto mb-1" />
                             <div className="text-2xl font-bold text-gray-900">{challenge.total_saved_kg} kg</div>
-                            <div className="text-xs text-gray-500">Total CO₂ saved</div>
+                            <div className="text-xs text-gray-500">Total CO2 saved</div>
                         </div>
                         <div className="bg-blue-50 rounded-xl p-4 text-center">
                             <Target className="w-6 h-6 text-blue-500 mx-auto mb-1" />

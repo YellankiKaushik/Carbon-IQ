@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { QUIZ_QUESTIONS } from '../utils/quizData';
-import { ArrowLeft, ArrowRight, Loader2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, AlertCircle, Home } from 'lucide-react';
 
 export default function Quiz() {
     const {
@@ -97,16 +97,26 @@ export default function Quiz() {
                     <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />
                     </div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Calculating your estimated footprint…</h2>
-                    <p className="text-gray-500">Finding your One Lever insight…</p>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Calculating your estimated footprint...</h2>
+                    <p className="text-gray-500">Finding your One Lever insight...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50">
-            <div className="max-w-2xl mx-auto px-4 py-8 md:py-16">
+        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 pt-20">
+            <div className="max-w-2xl mx-auto px-4 py-6 md:py-12">
+                <div className="flex items-center justify-between mb-5">
+                    <button
+                        onClick={() => setPage('landing')}
+                        className="inline-flex items-center gap-2 min-h-10 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-emerald-700 hover:bg-white transition-all"
+                    >
+                        <Home className="w-4 h-4" />
+                        Home
+                    </button>
+                    <span className="text-xs font-medium text-gray-500">Estimated footprint quiz</span>
+                </div>
                 {/* Progress */}
                 {!isNameStep && (
                     <div className="mb-8">
@@ -138,7 +148,7 @@ export default function Quiz() {
                                 value={nameValue}
                                 onChange={(e) => setNameValue(e.target.value.slice(0, 30))}
                                 placeholder="Enter your name"
-                                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-lg"
+                                className="w-full min-h-12 px-4 py-3 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all text-base md:text-lg"
                                 onKeyDown={(e) => e.key === 'Enter' && handleNext()}
                             />
                             <p className="text-xs text-gray-400 mt-2">Leave blank to continue as "You"</p>
@@ -153,7 +163,7 @@ export default function Quiz() {
                                     <button
                                         key={option.value}
                                         onClick={() => handleSelect(option.value)}
-                                        className={`w-full text-left px-5 py-4 rounded-xl border-2 transition-all text-base font-medium ${currentAnswer === option.value
+                                        className={`w-full min-h-14 text-left px-5 py-4 rounded-xl border-2 transition-all text-base font-medium ${currentAnswer === option.value
                                                 ? 'border-emerald-500 bg-emerald-50 text-emerald-800 shadow-sm'
                                                 : 'border-gray-100 bg-gray-50/50 text-gray-700 hover:border-emerald-200 hover:bg-emerald-50/30'
                                             }`}
@@ -187,23 +197,23 @@ export default function Quiz() {
                 </div>
 
                 {/* Navigation */}
-                <div className="flex items-center justify-between mt-6">
+                <div className="flex items-center justify-between gap-3 mt-6">
                     <button
                         onClick={handleBack}
                         disabled={isNameStep}
-                        className={`flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all ${isNameStep
+                        className={`min-h-12 flex items-center gap-2 px-5 py-3 rounded-xl font-medium transition-all ${isNameStep
                                 ? 'text-gray-300 cursor-not-allowed'
                                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                             }`}
                     >
                         <ArrowLeft className="w-4 h-4" />
-                        Back
+                        Previous
                     </button>
 
                     {isNameStep || step < totalSteps - 1 ? (
                         <button
                             onClick={handleNext}
-                            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-200 hover:shadow-emerald-300 transition-all"
+                            className="min-h-12 flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-200 hover:shadow-emerald-300 transition-all"
                         >
                             Next
                             <ArrowRight className="w-4 h-4" />
@@ -211,7 +221,7 @@ export default function Quiz() {
                     ) : (
                         <button
                             onClick={handleSubmit}
-                            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-200 hover:shadow-emerald-300 transition-all"
+                            className="min-h-12 flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-md shadow-emerald-200 hover:shadow-emerald-300 transition-all"
                         >
                             See My CarbonIQ Results
                             <ArrowRight className="w-4 h-4" />

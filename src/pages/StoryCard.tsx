@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { getLeaderboardWithUser } from '../utils/leaderboard';
 import { createStoryCardData } from '../utils/storyData';
+import { possessiveName, sanitizeDisplayName } from '../utils/profile';
 import {
     Download,
     Copy,
@@ -14,21 +15,25 @@ import {
     Loader2,
     AlertCircle,
     TrendingDown,
+    Link,
 } from 'lucide-react';
 
+const APP_URL = 'https://carbon-iq-1994a.web.app';
+
 export default function StoryCard() {
-    const { user, challenge, insight, setPage } = useAppStore();
+    const { user, challenge, insight, footprint, setPage } = useAppStore();
     const cardRef = useRef<HTMLDivElement>(null);
     const [copied, setCopied] = useState(false);
+    const [linkCopied, setLinkCopied] = useState(false);
     const [downloading, setDownloading] = useState(false);
     const [downloadError, setDownloadError] = useState(false);
 
-    const userName = user?.display_name || 'You';
+    const userName = sanitizeDisplayName(user?.display_name);
+    const ownerLabel = possessiveName(userName);
     const totalSaved = challenge?.total_saved_kg || 0;
     const streak = challenge?.streak_count || 0;
     const { userRank } = getLeaderboardWithUser(userName, totalSaved, streak);
-    const storyData = createStoryCardData(challenge, insight, userRank);
-
+    const storyData = createStoryCardData(challenge, insight, userRank, footprint?.total_kg_co2_year || 0, userName);
     const shareCaption = storyData.share_caption;
 
     if (!insight) {
@@ -51,22 +56,29 @@ export default function StoryCard() {
         );
     }
 
-    const handleCopy = async () => {
+    const copyText = async (value: string) => {
         try {
-            await navigator.clipboard.writeText(shareCaption);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
+            await navigator.clipboard.writeText(value);
         } catch {
-            // Fallback
             const textarea = document.createElement('textarea');
-            textarea.value = shareCaption;
+            textarea.value = value;
             document.body.appendChild(textarea);
             textarea.select();
             document.execCommand('copy');
             document.body.removeChild(textarea);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
         }
+    };
+
+    const handleCopy = async () => {
+        await copyText(shareCaption);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const handleCopyAppLink = async () => {
+        await copyText(APP_URL);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
     };
 
     const handleDownload = async () => {
@@ -81,7 +93,7 @@ export default function StoryCard() {
                 backgroundColor: '#ffffff',
             });
             const link = document.createElement('a');
-            link.download = `carboniq-story-${userName.toLowerCase().replace(/\s+/g, '-')}.png`;
+            link.download = storyData.download_filename;
             link.href = dataUrl;
             link.click();
         } catch {
@@ -94,23 +106,19 @@ export default function StoryCard() {
     return (
         <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 pt-20 pb-12 px-4">
             <div className="max-w-2xl mx-auto">
-                {/* Header */}
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">My CarbonIQ Story</h1>
                     <p className="text-gray-500">Share your progress with the world.</p>
                 </div>
 
-                {/* Story Card Preview */}
                 <div className="mb-6">
                     <div
                         ref={cardRef}
                         className="bg-white rounded-3xl border border-gray-100 shadow-lg overflow-hidden"
                     >
-                        {/* Top gradient bar */}
                         <div className="h-3 bg-gradient-to-r from-emerald-500 to-teal-500" />
 
-                        <div className="p-8">
-                            {/* Logo */}
+                        <div className="p-5 sm:p-8">
                             <div className="flex items-center gap-2 mb-6">
                                 <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
                                     <Leaf className="w-4 h-4 text-emerald-600" />
@@ -119,52 +127,58 @@ export default function StoryCard() {
                             </div>
 
                             <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                                {userName}'s Carbon Story
+                                {ownerLabel} Carbon Story
                             </h2>
-                            <p className="text-gray-500 text-sm mb-8">Personal carbon reduction progress</p>
+                            <p className="text-gray-500 text-sm mb-8">Personal carbon reduction progress from CarbonIQ</p>
 
-                            {/* Stats grid */}
-                            <div className="grid grid-cols-2 gap-4 mb-8">
-                                <div className="bg-emerald-50 rounded-2xl p-5 text-center">
+                            <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
+                                <div className="bg-emerald-50 rounded-2xl p-4 sm:p-5 text-center">
                                     <TrendingDown className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
                                     <div className="text-3xl font-bold text-gray-900">{totalSaved}</div>
-                                    <div className="text-xs text-gray-500 mt-1">kg CO₂ saved</div>
+                                    <div className="text-xs text-gray-500 mt-1">kg CO2 saved</div>
                                 </div>
-                                <div className="bg-orange-50 rounded-2xl p-5 text-center">
+                                <div className="bg-orange-50 rounded-2xl p-4 sm:p-5 text-center">
                                     <Flame className="w-6 h-6 text-orange-500 mx-auto mb-2" />
                                     <div className="text-3xl font-bold text-gray-900">{streak}</div>
                                     <div className="text-xs text-gray-500 mt-1">day streak</div>
                                 </div>
-                                <div className="bg-amber-50 rounded-2xl p-5 text-center">
+                                <div className="bg-amber-50 rounded-2xl p-4 sm:p-5 text-center">
                                     <Trophy className="w-6 h-6 text-amber-500 mx-auto mb-2" />
                                     <div className="text-3xl font-bold text-gray-900">#{userRank}</div>
                                     <div className="text-xs text-gray-500 mt-1">leaderboard rank</div>
                                 </div>
-                                <div className="bg-blue-50 rounded-2xl p-5 text-center">
+                                <div className="bg-blue-50 rounded-2xl p-4 sm:p-5 text-center">
                                     <Target className="w-6 h-6 text-blue-500 mx-auto mb-2" />
-                                    <div className="text-sm font-bold text-gray-900 leading-tight">
-                                        {insight?.one_lever.category
-                                            ? insight.one_lever.category.charAt(0).toUpperCase() + insight.one_lever.category.slice(1)
-                                            : '—'}
+                                    <div className="text-2xl font-bold text-gray-900 leading-tight">
+                                        {storyData.annual_footprint_kg
+                                            ? storyData.annual_footprint_kg.toLocaleString()
+                                            : '-'}
                                     </div>
-                                    <div className="text-xs text-gray-500 mt-1">biggest win area</div>
+                                    <div className="text-xs text-gray-500 mt-1">kg annual estimate</div>
                                 </div>
                             </div>
 
-                            {/* Share line */}
+                            <div className="bg-emerald-50 rounded-xl p-4 mb-4">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-emerald-700 mb-1">
+                                    One Lever Action
+                                </p>
+                                <p className="text-sm font-semibold text-gray-900">{storyData.biggest_win}</p>
+                                <p className="text-xs text-gray-600 mt-2">
+                                    Estimated impact: {insight.one_lever.savings_estimate_kg} kg CO2 per year.
+                                </p>
+                            </div>
+
                             <div className="bg-gray-50 rounded-xl p-4 text-center">
                                 <p className="text-sm text-gray-700 italic">"{shareCaption}"</p>
                             </div>
 
-                            {/* Footer */}
                             <div className="mt-6 text-center text-xs text-gray-400">
-                                carboniq · personal carbon awareness
+                                carbon-iq-1994a.web.app - personal carbon awareness
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Download error */}
                 {downloadError && (
                     <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-xl text-amber-700 text-sm mb-4">
                         <AlertCircle className="w-4 h-4 flex-shrink-0" />
@@ -172,31 +186,47 @@ export default function StoryCard() {
                     </div>
                 )}
 
-                {/* Share text */}
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-6">
                     <h3 className="text-sm font-semibold text-gray-700 mb-3">Share Caption</h3>
                     <div className="bg-gray-50 rounded-xl p-4 mb-3">
                         <p className="text-sm text-gray-700">{shareCaption}</p>
                     </div>
-                    <button
-                        onClick={handleCopy}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all"
-                    >
-                        {copied ? (
-                            <>
-                                <CheckCheck className="w-4 h-4" />
-                                Caption copied!
-                            </>
-                        ) : (
-                            <>
-                                <Copy className="w-4 h-4" />
-                                Copy Caption
-                            </>
-                        )}
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                        <button
+                            onClick={handleCopy}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-all"
+                        >
+                            {copied ? (
+                                <>
+                                    <CheckCheck className="w-4 h-4" />
+                                    Caption copied!
+                                </>
+                            ) : (
+                                <>
+                                    <Copy className="w-4 h-4" />
+                                    Copy Caption
+                                </>
+                            )}
+                        </button>
+                        <button
+                            onClick={handleCopyAppLink}
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 hover:bg-gray-100 rounded-lg transition-all"
+                        >
+                            {linkCopied ? (
+                                <>
+                                    <CheckCheck className="w-4 h-4" />
+                                    Link copied!
+                                </>
+                            ) : (
+                                <>
+                                    <Link className="w-4 h-4" />
+                                    Copy App Link
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex flex-wrap gap-3 justify-center">
                     <button
                         onClick={handleDownload}
@@ -206,7 +236,7 @@ export default function StoryCard() {
                         {downloading ? (
                             <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                Creating your Carbon Story…
+                                Creating your Carbon Story...
                             </>
                         ) : (
                             <>
@@ -227,5 +257,3 @@ export default function StoryCard() {
         </div>
     );
 }
-
-
