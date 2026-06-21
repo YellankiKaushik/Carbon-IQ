@@ -33,9 +33,15 @@ export function getLeaderboardWithUser(
         badge: getUserBadge(totalSavedKg),
     };
 
-    const entries = [...SEED_LEADERBOARD, userEntry]
-        .sort((a, b) => b.total_saved_kg - a.total_saved_kg)
-        .map((entry, i) => ({ ...entry, rank: i + 1 }));
+    const entries = [...SEED_LEADERBOARD, userEntry].sort((a, b) => {
+        if (b.total_saved_kg !== a.total_saved_kg) {
+            return b.total_saved_kg - a.total_saved_kg;
+        }
+        if (a.is_current_user !== b.is_current_user) {
+            return a.is_current_user ? -1 : 1;
+        }
+        return a.user_name.localeCompare(b.user_name);
+    });
 
     const userRank = entries.findIndex((e) => e.is_current_user) + 1;
 

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type {
+    AppPage,
     UserProfile,
     QuizAnswers,
     FootprintBreakdown,
@@ -13,6 +14,7 @@ import { generateOneLeverInsight, getDemoInsight } from '../utils/aiInsight';
 import { applyChallengeCheckIn, createChallengeFromInsight } from '../utils/challengeLogic';
 import { sanitizeDisplayName } from '../utils/profile';
 import { getFootprintBand, getSafeCategory, trackCarbonIQEvent } from '../utils/analytics';
+import { getCompletedQuizAnswers } from '../utils/quizData';
 
 interface AppState {
     user: UserProfile | null;
@@ -23,7 +25,7 @@ interface AppState {
     resetQuiz: () => void;
 
     footprint: FootprintBreakdown | null;
-    calculateQuizFootprint: () => FootprintBreakdown;
+    calculateQuizFootprint: () => FootprintBreakdown | null;
 
     insight: AIInsightResponse | null;
     insightLoading: boolean;
@@ -37,8 +39,8 @@ interface AppState {
 
     checkIns: CheckIn[];
 
-    currentPage: string;
-    setPage: (page: string) => void;
+    currentPage: AppPage;
+    setPage: (page: AppPage) => void;
     isDemoMode: boolean;
     setDemoMode: (value: boolean) => void;
 
@@ -89,8 +91,28 @@ const demoAnswers: QuizAnswers = {
     reduction_preference: 'biggest-impact',
 };
 
-export const useAppStore = create<AppState>((set, get) => ({
-    user: null,
+export const useAppStore = create<AppState>((set, get) => {
+    const runInsightGeneration = async () => {
+        const { quizAnswers, footprint } = get();
+        const completedAnswers = getCompletedQuizAnswers(quizAnswers);
+        if (!footprint || !completedAnswers) return;
+
+        set({ insightLoading: true });
+        try {
+            const insight = await generateOneLeverInsight(completedAnswers, footprint);
+            set({ insight, insightLoading: false });
+            saveToStorage('insight', insight);
+            trackCarbonIQEvent('ai_insight_generated', {
+                source: insight.source,
+                largest_category: getSafeCategory(footprint.biggest_category),
+            });
+        } catch {
+            set({ insightLoading: false });
+        }
+    };
+
+    return {
+        user: null,
     setUserName: (name: string) => {
         const user: UserProfile = {
             id: 'current-user',
@@ -119,7 +141,10 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     footprint: null,
     calculateQuizFootprint: () => {
-        const footprint = calculateFootprint(get().quizAnswers as QuizAnswers);
+        const completedAnswers = getCompletedQuizAnswers(get().quizAnswers);
+        if (!completedAnswers) return null;
+
+        const footprint = calculateFootprint(completedAnswers);
         set({ footprint, isDemoMode: false });
         saveToStorage('footprint', footprint);
         saveToStorage('isDemoMode', false);
@@ -128,40 +153,8 @@ export const useAppStore = create<AppState>((set, get) => ({
 
     insight: null,
     insightLoading: false,
-    generateInsight: async () => {
-        const { quizAnswers, footprint } = get();
-        if (!footprint) return;
-
-        set({ insightLoading: true });
-        try {
-            const insight = await generateOneLeverInsight(quizAnswers as QuizAnswers, footprint);
-            set({ insight, insightLoading: false });
-            saveToStorage('insight', insight);
-            trackCarbonIQEvent('ai_insight_generated', {
-                source: insight.source,
-                largest_category: getSafeCategory(footprint.biggest_category),
-            });
-        } catch {
-            set({ insightLoading: false });
-        }
-    },
-    retryInsight: async () => {
-        const { quizAnswers, footprint } = get();
-        if (!footprint) return;
-
-        set({ insightLoading: true });
-        try {
-            const insight = await generateOneLeverInsight(quizAnswers as QuizAnswers, footprint);
-            set({ insight, insightLoading: false });
-            saveToStorage('insight', insight);
-            trackCarbonIQEvent('ai_insight_generated', {
-                source: insight.source,
-                largest_category: getSafeCategory(footprint.biggest_category),
-            });
-        } catch {
-            set({ insightLoading: false });
-        }
-    },
+    generateInsight: runInsightGeneration,
+    retryInsight: runInsightGeneration,
 
     challenge: null,
     joinChallenge: () => {
@@ -204,7 +197,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     checkIns: [],
 
     currentPage: 'landing',
-    setPage: (page: string) => set({ currentPage: page }),
+    setPage: (page: AppPage) => set({ currentPage: page }),
     isDemoMode: false,
     setDemoMode: (value: boolean) => {
         set({ isDemoMode: value });
@@ -281,4 +274,5 @@ export const useAppStore = create<AppState>((set, get) => ({
 
         set({ user, quizAnswers, footprint, insight, challenge, checkIns, isDemoMode });
     },
-}));
+    };
+});

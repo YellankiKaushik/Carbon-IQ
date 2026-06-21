@@ -394,6 +394,7 @@ export default function Dashboard() {
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm mb-8 overflow-hidden">
                         <button
                             onClick={() => setShowSecondary(!showSecondary)}
+                            aria-expanded={showSecondary}
                             className="w-full px-6 py-4 flex items-center justify-between text-left"
                         >
                             <span className="text-sm font-semibold text-gray-700">Other helpful actions</span>

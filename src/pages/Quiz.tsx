@@ -32,7 +32,7 @@ export default function Quiz() {
         : null;
 
     const currentAnswer = currentQuestion
-        ? (quizAnswers as Record<string, string>)[currentQuestion.id]
+        ? quizAnswers[currentQuestion.id]
         : undefined;
 
     const handleNameSubmit = () => {
@@ -83,6 +83,10 @@ export default function Quiz() {
         setQuizSubmitting(true);
         try {
             const footprint = calculateQuizFootprint();
+            if (!footprint) {
+                setValidationError('Some quiz answers are missing. Please review the quiz before continuing.');
+                return;
+            }
             trackCarbonIQEvent('quiz_completed', {
                 largest_category: getSafeCategory(footprint.biggest_category),
                 total_footprint_band: getFootprintBand(footprint.total_kg_co2_year),
@@ -133,6 +137,10 @@ export default function Quiz() {
                         </div>
                         <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div
+                                role="progressbar"
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                                aria-valuenow={Math.round(progress)}
                                 className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full transition-all duration-500 ease-out"
                                 style={{ width: `${progress}%` }}
                             />
@@ -169,6 +177,7 @@ export default function Quiz() {
                                     <button
                                         key={option.value}
                                         onClick={() => handleSelect(option.value)}
+                                        aria-pressed={currentAnswer === option.value}
                                         className={`w-full min-h-14 text-left px-5 py-4 rounded-xl border-2 transition-all text-base font-medium ${currentAnswer === option.value
                                                 ? 'border-emerald-500 bg-emerald-50 text-emerald-800 shadow-sm'
                                                 : 'border-gray-100 bg-gray-50/50 text-gray-700 hover:border-emerald-200 hover:bg-emerald-50/30'

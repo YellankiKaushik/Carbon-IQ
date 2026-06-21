@@ -1,4 +1,4 @@
-import type { QuizQuestion } from '../types';
+import type { QuizAnswers, QuizQuestion } from '../types';
 
 export const QUIZ_QUESTIONS: QuizQuestion[] = [
     {
@@ -75,3 +75,37 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
         ],
     },
 ];
+
+export function getCompletedQuizAnswers(answers: Partial<QuizAnswers>): QuizAnswers | null {
+    const {
+        commute_mode,
+        commute_days,
+        diet_type,
+        home_energy_usage,
+        shopping_frequency,
+        travel_frequency,
+        reduction_preference,
+    } = answers;
+
+    if (
+        !commute_mode ||
+        !commute_days ||
+        !diet_type ||
+        !home_energy_usage ||
+        !shopping_frequency ||
+        !travel_frequency ||
+        !reduction_preference
+    ) {
+        return null;
+    }
+
+    return {
+        commute_mode,
+        commute_days,
+        diet_type,
+        home_energy_usage,
+        shopping_frequency,
+        travel_frequency,
+        reduction_preference,
+    };
+}

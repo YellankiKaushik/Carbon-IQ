@@ -1,8 +1,12 @@
 import { useAppStore } from '../store/useAppStore';
 import { trackCarbonIQEvent } from '../utils/analytics';
+import type { AppPage } from '../types';
+import type { LucideIcon } from 'lucide-react';
 import { Leaf, BarChart3, Target, Trophy, BookOpen, Home } from 'lucide-react';
 
-const NAV_ITEMS = [
+type NavPage = Exclude<AppPage, 'landing' | 'quiz'>;
+
+const NAV_ITEMS: Array<{ id: NavPage; label: string; icon: LucideIcon }> = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
     { id: 'challenges', label: 'Challenges', icon: Target },
     { id: 'leaderboard', label: 'Leaderboard', icon: Trophy },
@@ -48,6 +52,7 @@ export default function Navbar() {
                             <button
                                 key={id}
                                 onClick={() => setPage(id)}
+                                aria-current={currentPage === id ? 'page' : undefined}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${currentPage === id
                                         ? 'bg-emerald-50 text-emerald-700'
                                         : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
@@ -81,6 +86,7 @@ export default function Navbar() {
                             <button
                                 key={id}
                                 onClick={() => setPage(id)}
+                                aria-current={currentPage === id ? 'page' : undefined}
                                 className={`p-2 rounded-lg transition-all ${currentPage === id
                                         ? 'bg-emerald-50 text-emerald-700'
                                         : 'text-gray-400 hover:text-gray-600'

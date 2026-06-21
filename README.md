@@ -378,7 +378,3 @@ Do not add mock screenshots. Only add images captured from the real local or liv
 ## Live Demo
 
 [Open CarbonIQ](https://carbon-iq-1994a.web.app)
-
-## LinkedIn Build-in-Public Post
-
-Placeholder: add LinkedIn post link.

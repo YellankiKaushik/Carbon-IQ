@@ -7,6 +7,7 @@ import { getLeaderboardWithUser } from './leaderboard';
 import { createStoryCardData, createStoryFilename } from './storyData';
 import { possessiveName, sanitizeDisplayName } from './profile';
 import { useAppStore } from '../store/useAppStore';
+import { getCompletedQuizAnswers } from './quizData';
 import {
     CARBONIQ_ANALYTICS_EVENTS,
     getFootprintBand,
@@ -59,6 +60,12 @@ function jsonResponse(body: unknown, status = 200): Response {
 }
 
 describe('CarbonIQ calculator', () => {
+    it('accepts complete quiz answers and rejects incomplete answers', () => {
+        expect(getCompletedQuizAnswers(answers)).toEqual(answers);
+        expect(getCompletedQuizAnswers({ ...answers, commute_mode: undefined })).toBeNull();
+        expect(getCompletedQuizAnswers({ commute_mode: 'car' })).toBeNull();
+    });
+
     it('returns category totals and annual/monthly estimates', () => {
         const footprint = calculateFootprint(answers);
 
@@ -226,6 +233,21 @@ describe('leaderboard and story data', () => {
         );
     });
 
+    it('handles leaderboard ties predictably by placing the current user first', () => {
+        const { entries, userRank } = getLeaderboardWithUser('You', 420, 2);
+
+        expect(userRank).toBe(1);
+        expect(entries[0]).toMatchObject({
+            user_name: 'You',
+            is_current_user: true,
+            total_saved_kg: 420,
+        });
+        expect(entries[1]).toMatchObject({
+            user_name: 'Aanya',
+            total_saved_kg: 420,
+        });
+    });
+
     it('generates story card data from challenge state', () => {
         const challenge: Challenge = {
             id: 'challenge-test',
@@ -248,6 +270,16 @@ describe('leaderboard and story data', () => {
         expect(story.download_filename).toBe('carboniq-story-kaushik.png');
         expect(story.share_caption).toContain('18 kg CO2');
         expect(story.share_caption).toContain('carbon-iq-1994a.web.app');
+    });
+
+    it('creates stable story fallback data when challenge or insight is missing', () => {
+        const story = createStoryCardData(null, null, 9, 0, '');
+
+        expect(story.total_saved_kg).toBe(0);
+        expect(story.streak_count).toBe(0);
+        expect(story.biggest_win).toBe('Taking climate action');
+        expect(story.download_filename).toBe('carboniq-story.png');
+        expect(story.share_caption).toContain('I used CarbonIQ');
     });
 });
 

@@ -1,3 +1,11 @@
+export type AppPage =
+    | 'landing'
+    | 'quiz'
+    | 'dashboard'
+    | 'challenges'
+    | 'leaderboard'
+    | 'story';
+
 export interface UserProfile {
     id: string;
     display_name: string;

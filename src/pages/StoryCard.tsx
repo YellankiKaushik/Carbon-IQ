@@ -38,7 +38,9 @@ export default function StoryCard() {
     const shareCaption = storyData.share_caption;
 
     useEffect(() => {
-        trackCarbonIQEvent('story_card_viewed');
+        trackCarbonIQEvent('story_card_viewed', {
+            state: insight ? 'ready' : 'empty',
+        });
     }, []);
 
     if (!insight) {
