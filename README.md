@@ -247,7 +247,7 @@ https://github.com/YellankiKaushik/Carbon-IQ
 ## Documentation
 
 - [Project Explanation](docs/PROJECT_EXPLANATION.md)
-- [Technical Documentation](docs/TECHNICAL_DOCUMENTATION.md) - coming soon
+- [Technical Documentation](docs/TECHNICAL_DOCUMENTATION.md)
 
 ## Manual QA Checklist
 
