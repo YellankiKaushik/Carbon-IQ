@@ -35,6 +35,7 @@ Most carbon calculators stop at a score. CarbonIQ turns the result into one clea
 - Personalized dashboard summary cards, category percentages, community sample snapshot, and challenge progress.
 - One Lever insight from Gemini first, OpenRouter second, and deterministic fallback when APIs are unavailable.
 - AI provider badge and an expandable explanation of how the insight was generated.
+- Google Analytics for Firebase is used for lightweight product event tracking such as quiz completion, challenge engagement, and story-card interactions.
 - Challenge tracking with streak, daily duplicate prevention, and total CO2 saved.
 - Leaderboard ranked by total CO2 saved, not lowest footprint.
 - Shareable Carbon Story card with user name, annual footprint, One Lever action, savings, streak, rank, clean filename, caption copy, app-link copy, and PNG download support.
@@ -57,12 +58,15 @@ Reviewers can also click "View Demo Dashboard" to skip directly into a realistic
 - Recharts
 - Lucide React
 - html-to-image
+- Firebase Analytics
 - Vitest
 
 ## Architecture
 
 ```txt
 src/
+  lib/
+    firebase.ts
   components/
     Navbar.tsx
   pages/
@@ -78,6 +82,7 @@ src/
     index.ts
   utils/
     aiInsight.ts
+    analytics.ts
     calculator.ts
     challengeLogic.ts
     leaderboard.ts
@@ -156,6 +161,7 @@ Vitest covers the core MVP logic:
 - Leaderboard sorting and current-user highlighting.
 - Story card data generation.
 - AI provider fallback order and AI JSON parsing.
+- Firebase Analytics helper event names, safe parameter handling, footprint bands, and no-op behavior.
 
 ## Run Locally
 
@@ -174,9 +180,17 @@ Copy `.env.example` to `.env.local` if you want AI insights:
 VITE_GEMINI_API_KEY=your_gemini_api_key_here
 VITE_OPENROUTER_API_KEY=your_openrouter_api_key_here
 VITE_OPENROUTER_MODEL=openai/gpt-4o-mini
+
+VITE_FIREBASE_API_KEY=your_firebase_api_key_here
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=carbon-iq-1994a
+VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id_here
+VITE_FIREBASE_APP_ID=your_firebase_app_id_here
+VITE_FIREBASE_MEASUREMENT_ID=G-your_measurement_id_here
 ```
 
-All keys are optional. Without them, CarbonIQ uses static fallback insights.
+All AI keys are optional. Without them, CarbonIQ uses static fallback insights. Firebase Analytics also no-ops safely when Firebase Web App config or browser support is unavailable.
 
 Do not commit `.env` or `.env.local`.
 
@@ -197,6 +211,7 @@ The project is a static Vite app deployed to Firebase Hosting. Configure `VITE_G
 Deployment:
 
 - Platform: Firebase Hosting
+- Product telemetry: Google Analytics for Firebase
 - Firebase project: carbon-iq-1994a
 - Build command: `pnpm build`
 - Output directory: `dist`
@@ -239,6 +254,7 @@ firebase deploy --only hosting
 - `.env.example` intentionally contains placeholders only.
 - `dist`, `node_modules`, and `.firebase` are generated or local files and should stay uncommitted.
 - Because this hackathon MVP is frontend-only, Vite environment variables are embedded in the browser bundle. A production version should proxy AI calls through Firebase Functions, Cloud Run, or another trusted backend.
+- Analytics events intentionally avoid names, raw quiz answers, API keys, email addresses, full AI responses, and sensitive personal data.
 
 ## Repository
 

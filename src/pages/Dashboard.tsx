@@ -2,6 +2,7 @@ import { useAppStore } from '../store/useAppStore';
 import { getCategoryLabel, getCategoryColor } from '../utils/calculator';
 import { SEED_LEADERBOARD } from '../utils/leaderboard';
 import { possessiveName, sanitizeDisplayName } from '../utils/profile';
+import { getSafeCategory, trackCarbonIQEvent } from '../utils/analytics';
 import {
     PieChart,
     Pie,
@@ -25,7 +26,7 @@ import {
     CheckCircle2,
     Target,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export default function Dashboard() {
     const {
@@ -43,6 +44,26 @@ export default function Dashboard() {
     } = useAppStore();
 
     const [showSecondary, setShowSecondary] = useState(false);
+    const dashboardViewTracked = useRef(false);
+    const demoDashboardViewTracked = useRef(false);
+
+    useEffect(() => {
+        if (!footprint) return;
+
+        if (!dashboardViewTracked.current) {
+            trackCarbonIQEvent('dashboard_viewed', {
+                mode: isDemoMode ? 'demo' : 'real',
+                ai_source: insight?.source || 'unknown',
+                largest_category: getSafeCategory(footprint.biggest_category),
+            });
+            dashboardViewTracked.current = true;
+        }
+
+        if (isDemoMode && !demoDashboardViewTracked.current) {
+            trackCarbonIQEvent('demo_dashboard_viewed', { mode: 'demo' });
+            demoDashboardViewTracked.current = true;
+        }
+    }, [footprint, insight?.source, isDemoMode]);
 
     if (!footprint) {
         return (
@@ -54,7 +75,10 @@ export default function Dashboard() {
                     <h2 className="text-xl font-semibold text-gray-900 mb-2">No results yet</h2>
                     <p className="text-gray-500 mb-6">Complete the Carbon Quiz to generate your dashboard.</p>
                     <button
-                        onClick={() => setPage('quiz')}
+                        onClick={() => {
+                            trackCarbonIQEvent('quiz_started', { source: 'dashboard' });
+                            setPage('quiz');
+                        }}
                         className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-all"
                     >
                         Start Quiz
@@ -90,6 +114,20 @@ export default function Dashboard() {
         setPage('challenges');
     };
 
+    const handleRetryInsight = () => {
+        trackCarbonIQEvent('ai_insight_retried', {
+            previous_source: insight?.source || 'unknown',
+            largest_category: getSafeCategory(footprint.biggest_category),
+        });
+        void retryInsight();
+    };
+
+    const startRealQuiz = (source: 'demo_dashboard' | 'dashboard') => {
+        trackCarbonIQEvent('quiz_started', { source });
+        resetQuiz();
+        setPage('quiz');
+    };
+
     const insightSourceLabel = insight?.source === 'gemini'
         ? 'AI: Gemini'
         : insight?.source === 'openrouter'
@@ -116,7 +154,7 @@ export default function Dashboard() {
                             </p>
                         </div>
                         <button
-                            onClick={() => { resetQuiz(); setPage('quiz'); }}
+                            onClick={() => startRealQuiz('demo_dashboard')}
                             className="min-h-11 px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-sm font-semibold transition-all"
                         >
                             Calculate My Real Footprint
@@ -337,7 +375,7 @@ export default function Dashboard() {
                             </button>
 
                             <button
-                                onClick={retryInsight}
+                                onClick={handleRetryInsight}
                                 className="mt-3 sm:ml-3 inline-flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-800 font-medium"
                             >
                                 <RefreshCw className="w-3.5 h-3.5" />
@@ -459,7 +497,7 @@ export default function Dashboard() {
                 {/* Action buttons */}
                 <div className="flex flex-wrap gap-3 justify-center">
                     <button
-                        onClick={() => { resetQuiz(); setPage('quiz'); }}
+                        onClick={() => startRealQuiz('dashboard')}
                         className="px-5 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition-all"
                     >
                         Recalculate

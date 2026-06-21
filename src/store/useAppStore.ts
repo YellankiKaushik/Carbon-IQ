@@ -12,6 +12,7 @@ import { calculateFootprint, getDemoFootprint } from '../utils/calculator';
 import { generateOneLeverInsight, getDemoInsight } from '../utils/aiInsight';
 import { applyChallengeCheckIn, createChallengeFromInsight } from '../utils/challengeLogic';
 import { sanitizeDisplayName } from '../utils/profile';
+import { getFootprintBand, getSafeCategory, trackCarbonIQEvent } from '../utils/analytics';
 
 interface AppState {
     user: UserProfile | null;
@@ -22,7 +23,7 @@ interface AppState {
     resetQuiz: () => void;
 
     footprint: FootprintBreakdown | null;
-    calculateQuizFootprint: () => void;
+    calculateQuizFootprint: () => FootprintBreakdown;
 
     insight: AIInsightResponse | null;
     insightLoading: boolean;
@@ -122,6 +123,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         set({ footprint, isDemoMode: false });
         saveToStorage('footprint', footprint);
         saveToStorage('isDemoMode', false);
+        return footprint;
     },
 
     insight: null,
@@ -135,6 +137,10 @@ export const useAppStore = create<AppState>((set, get) => ({
             const insight = await generateOneLeverInsight(quizAnswers as QuizAnswers, footprint);
             set({ insight, insightLoading: false });
             saveToStorage('insight', insight);
+            trackCarbonIQEvent('ai_insight_generated', {
+                source: insight.source,
+                largest_category: getSafeCategory(footprint.biggest_category),
+            });
         } catch {
             set({ insightLoading: false });
         }
@@ -148,6 +154,10 @@ export const useAppStore = create<AppState>((set, get) => ({
             const insight = await generateOneLeverInsight(quizAnswers as QuizAnswers, footprint);
             set({ insight, insightLoading: false });
             saveToStorage('insight', insight);
+            trackCarbonIQEvent('ai_insight_generated', {
+                source: insight.source,
+                largest_category: getSafeCategory(footprint.biggest_category),
+            });
         } catch {
             set({ insightLoading: false });
         }
@@ -162,6 +172,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         set({ challenge: newChallenge, checkIns: [] });
         saveToStorage('challenge', newChallenge);
         saveToStorage('checkIns', []);
+        trackCarbonIQEvent('challenge_joined', {
+            category: getSafeCategory(newChallenge.category),
+        });
     },
 
     checkIn: () => {
@@ -171,6 +184,12 @@ export const useAppStore = create<AppState>((set, get) => ({
             set({ challenge: result.challenge, checkIns: result.checkIns });
             saveToStorage('challenge', result.challenge);
             saveToStorage('checkIns', result.checkIns);
+            trackCarbonIQEvent('check_in_completed', {
+                streak: result.challenge?.streak_count || 0,
+                saved_co2_band: getFootprintBand(result.challenge?.total_saved_kg || 0),
+            });
+        } else {
+            trackCarbonIQEvent('duplicate_check_in_blocked');
         }
 
         return result;

@@ -2,7 +2,7 @@
 
 ## 1. Technical Executive Summary
 
-CarbonIQ is a frontend-first carbon footprint awareness MVP built with Vite, React, TypeScript, Tailwind CSS, Zustand, Recharts, Vitest, localStorage, a Gemini -> OpenRouter -> static fallback AI insight chain, and Firebase Hosting.
+CarbonIQ is a frontend-first carbon footprint awareness MVP built with Vite, React, TypeScript, Tailwind CSS, Zustand, Recharts, Vitest, localStorage, a Gemini -> OpenRouter -> static fallback AI insight chain, Firebase Hosting, and Google Analytics for Firebase.
 
 Technically, CarbonIQ is a static single-page React application. It does not use a backend database, authentication, server-rendering, or server-side API layer in the current MVP. The application keeps product state in a Zustand store and persists important state slices into browser localStorage. Carbon calculations, AI response validation, challenge logic, leaderboard sorting, profile sanitization, and story-card data composition live in testable utility modules.
 
@@ -27,6 +27,7 @@ CarbonIQ is a Vite + React + TypeScript frontend-first carbon awareness MVP usin
 - Responsive Tailwind UI across landing, quiz, dashboard, challenge, leaderboard, and story card.
 - Vitest coverage for calculator, AI fallback, challenge, leaderboard, story data, profile helpers, and demo mode.
 - Firebase Hosting deployment through `firebase.json` and `.firebaserc`.
+- Firebase Analytics event tracking through a safe typed wrapper that avoids PII and no-ops when config or browser support is unavailable.
 
 ### Current limitations
 
@@ -127,6 +128,8 @@ Actual repository structure:
 ```txt
 Carbon-IQ/
 |-- src/
+|   |-- lib/
+|   |   `-- firebase.ts
 |   |-- components/
 |   |   `-- Navbar.tsx
 |   |-- pages/
@@ -142,6 +145,7 @@ Carbon-IQ/
 |   |   `-- index.ts
 |   |-- utils/
 |   |   |-- aiInsight.ts
+|   |   |-- analytics.ts
 |   |   |-- calculator.ts
 |   |   |-- carboniq.test.ts
 |   |   |-- challengeLogic.ts
@@ -176,6 +180,7 @@ There is no custom `vite.config.ts` or `vite.config.js` in the repository at the
 | Path | Responsibility |
 | --- | --- |
 | `src/App.tsx` | Lazy-loads pages, hydrates store, renders global `Navbar`, switches pages by store state. |
+| `src/lib/firebase.ts` | Initializes the Firebase app and Analytics SDK defensively from Vite environment variables. |
 | `src/components/Navbar.tsx` | Fixed app navigation with desktop text tabs and mobile icon tabs. |
 | `src/pages/Landing.tsx` | Landing page, problem framing, One Lever preview, demo and quiz CTAs. |
 | `src/pages/Quiz.tsx` | Name capture, seven-question quiz, validation, previous/next/home navigation. |
@@ -186,6 +191,7 @@ There is no custom `vite.config.ts` or `vite.config.js` in the repository at the
 | `src/store/useAppStore.ts` | Zustand app state and localStorage persistence. |
 | `src/types/index.ts` | Core TypeScript interfaces. |
 | `src/utils/aiInsight.ts` | AI prompt building, Gemini/OpenRouter calls, response validation, fallback insight. |
+| `src/utils/analytics.ts` | Typed Firebase Analytics event wrapper, safe param sanitization, category normalization, and footprint bands. |
 | `src/utils/calculator.ts` | Deterministic footprint estimate and demo footprint. |
 | `src/utils/challengeLogic.ts` | Challenge creation and check-in mutation logic. |
 | `src/utils/leaderboard.ts` | Seed data, user badge, ranking and sorting. |
@@ -212,6 +218,7 @@ There is no custom `vite.config.ts` or `vite.config.js` in the repository at the
 | OpenRouter API | Secondary AI fallback | Keeps AI flow resilient if Gemini fails | External provider dependency |
 | Static fallback | Final insight fallback | Guarantees dashboard remains usable | Less personalized than AI |
 | Firebase Hosting | Deployment | Fast Google-hosted static app deployment | No server runtime for API protection |
+| Google Analytics for Firebase | Product telemetry | Tracks safe funnel and engagement events for product iteration | Events may take time to appear in Firebase Console |
 | Vitest | Logic testing | Fast tests for utilities and store behavior | Does not cover pixel-perfect UI |
 | Firebase CLI | Deployment tool | Deploys `dist/` to Firebase Hosting | Requires authenticated local environment |
 | pnpm | Package manager | Efficient dependency install and script execution | Windows shell may require direct `.cmd` usage in some environments |
@@ -276,6 +283,7 @@ Logic Layer
 Integration Layer
 |-- Gemini API
 |-- OpenRouter API
+|-- Firebase Analytics
 `-- Firebase Hosting
 
 Testing Layer
@@ -1026,6 +1034,14 @@ Real keys are expected only in `.env.local`. `.env.example` contains placeholder
 VITE_GEMINI_API_KEY=your_gemini_api_key_here
 VITE_OPENROUTER_API_KEY=your_openrouter_api_key_here
 VITE_OPENROUTER_MODEL=openai/gpt-4o-mini
+
+VITE_FIREBASE_API_KEY=your_firebase_api_key_here
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=carbon-iq-1994a
+VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id_here
+VITE_FIREBASE_APP_ID=your_firebase_app_id_here
+VITE_FIREBASE_MEASUREMENT_ID=G-your_measurement_id_here
 ```
 
 Ignored files:
@@ -1055,6 +1071,37 @@ React frontend
 ```
 
 This would keep provider keys server-side and allow rate limiting, logging, and abuse protection.
+
+### Firebase Analytics telemetry
+
+CarbonIQ uses Google Analytics for Firebase for lightweight product telemetry. The SDK is initialized in `src/lib/firebase.ts` only when the Firebase Web App config is present and the current browser supports Analytics. If config is missing, unsupported, or initialization fails, the app safely continues without analytics.
+
+All event calls go through `src/utils/analytics.ts`. The wrapper exposes typed lowercase snake_case event names, sanitizes parameters to `string | number | boolean`, catches logging errors, and prevents Firebase Analytics from blocking the UI.
+
+Tracked custom events:
+
+```txt
+app_loaded
+landing_viewed
+demo_dashboard_viewed
+quiz_started
+quiz_completed
+dashboard_viewed
+ai_insight_generated
+ai_insight_retried
+challenge_joined
+check_in_completed
+duplicate_check_in_blocked
+leaderboard_viewed
+story_card_viewed
+story_card_downloaded
+story_caption_copied
+story_app_link_copied
+```
+
+Safe parameters are coarse product metadata such as demo/real mode, source page, AI provider source, normalized largest category, deployment, project, streak count, and footprint or saved-CO2 bands. Analytics does not log user names, raw quiz answers, API keys, email addresses, full AI responses, or sensitive personal data.
+
+Firebase Analytics improves iteration by showing which parts of the product flow users reach: landing, demo dashboard, quiz completion, AI insight generation, challenge engagement, leaderboard, and story-card sharing. Events may take time to appear in the Firebase Console, so absence from realtime reports immediately after deployment is not treated as app failure.
 
 ## 25. Firebase Hosting Deployment Architecture
 
@@ -1112,6 +1159,14 @@ Placeholder environment variables:
 VITE_GEMINI_API_KEY=your_gemini_api_key_here
 VITE_OPENROUTER_API_KEY=your_openrouter_api_key_here
 VITE_OPENROUTER_MODEL=openai/gpt-4o-mini
+
+VITE_FIREBASE_API_KEY=your_firebase_api_key_here
+VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=carbon-iq-1994a
+VITE_FIREBASE_STORAGE_BUCKET=your_project.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id_here
+VITE_FIREBASE_APP_ID=your_firebase_app_id_here
+VITE_FIREBASE_MEASUREMENT_ID=G-your_measurement_id_here
 ```
 
 ### How they work
@@ -1121,6 +1176,7 @@ VITE_OPENROUTER_MODEL=openai/gpt-4o-mini
 - Vite injects `VITE_` variables at build time.
 - Firebase Hosting serves already-built static files.
 - Changing `.env.local` requires rebuilding and redeploying.
+- Firebase Analytics no-ops safely if Firebase Web App config is missing or unsupported in the current browser.
 
 Important note:
 
@@ -1145,6 +1201,7 @@ Tests live in `src/utils/carboniq.test.ts`.
 | Story data | Saved CO2, streak, rank, annual footprint, filename, app URL in caption |
 | Profile helpers | Sanitized display names and possessive fallback |
 | Demo mode | Demo flag set and cleared by real calculation |
+| Firebase Analytics helpers | Event names, footprint bands, safe category normalization, param sanitization, and no-crash no-op tracking |
 
 ### Commands
 
@@ -1173,7 +1230,7 @@ pnpm build
 ### Verified during this documentation task
 
 - `pnpm build` passed.
-- `.\node_modules\.bin\vitest.cmd run` passed with 16 tests.
+- `.\node_modules\.bin\vitest.cmd run` passed with 20 tests after adding Firebase Analytics helper coverage.
 
 ## 28. Performance and Efficiency Considerations
 

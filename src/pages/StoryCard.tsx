@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { getLeaderboardWithUser } from '../utils/leaderboard';
 import { createStoryCardData } from '../utils/storyData';
 import { possessiveName, sanitizeDisplayName } from '../utils/profile';
+import { trackCarbonIQEvent } from '../utils/analytics';
 import {
     Download,
     Copy,
@@ -35,6 +36,10 @@ export default function StoryCard() {
     const { userRank } = getLeaderboardWithUser(userName, totalSaved, streak);
     const storyData = createStoryCardData(challenge, insight, userRank, footprint?.total_kg_co2_year || 0, userName);
     const shareCaption = storyData.share_caption;
+
+    useEffect(() => {
+        trackCarbonIQEvent('story_card_viewed');
+    }, []);
 
     if (!insight) {
         return (
@@ -71,12 +76,14 @@ export default function StoryCard() {
 
     const handleCopy = async () => {
         await copyText(shareCaption);
+        trackCarbonIQEvent('story_caption_copied');
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
     const handleCopyAppLink = async () => {
         await copyText(APP_URL);
+        trackCarbonIQEvent('story_app_link_copied');
         setLinkCopied(true);
         setTimeout(() => setLinkCopied(false), 2000);
     };
@@ -96,6 +103,7 @@ export default function StoryCard() {
             link.download = storyData.download_filename;
             link.href = dataUrl;
             link.click();
+            trackCarbonIQEvent('story_card_downloaded');
         } catch {
             setDownloadError(true);
         } finally {

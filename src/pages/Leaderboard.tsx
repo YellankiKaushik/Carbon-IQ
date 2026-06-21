@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { getLeaderboardWithUser } from '../utils/leaderboard';
 import { possessiveName, sanitizeDisplayName } from '../utils/profile';
+import { trackCarbonIQEvent } from '../utils/analytics';
 import { Trophy, Flame, ArrowLeft, BookOpen, Target, Medal, Info } from 'lucide-react';
 
 export default function Leaderboard() {
@@ -11,6 +13,10 @@ export default function Leaderboard() {
     const ownerLabel = possessiveName(userName);
 
     const { entries, userRank } = getLeaderboardWithUser(userName, totalSaved, streak);
+
+    useEffect(() => {
+        trackCarbonIQEvent('leaderboard_viewed');
+    }, []);
 
     const getRankIcon = (rank: number) => {
         if (rank === 1) return <Medal className="w-5 h-5 text-yellow-500" />;

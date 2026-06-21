@@ -7,6 +7,13 @@ import { getLeaderboardWithUser } from './leaderboard';
 import { createStoryCardData, createStoryFilename } from './storyData';
 import { possessiveName, sanitizeDisplayName } from './profile';
 import { useAppStore } from '../store/useAppStore';
+import {
+    CARBONIQ_ANALYTICS_EVENTS,
+    getFootprintBand,
+    getSafeCategory,
+    sanitizeAnalyticsParams,
+    trackCarbonIQEvent,
+} from './analytics';
 
 const answers: QuizAnswers = {
     commute_mode: 'car',
@@ -268,5 +275,50 @@ describe('personalization helpers and demo mode', () => {
 
         expect(useAppStore.getState().isDemoMode).toBe(false);
         expect(useAppStore.getState().footprint).not.toBeNull();
+    });
+});
+
+describe('Firebase Analytics helpers', () => {
+    it('defines the expected safe product event names', () => {
+        expect(CARBONIQ_ANALYTICS_EVENTS).toContain('app_loaded');
+        expect(CARBONIQ_ANALYTICS_EVENTS).toContain('quiz_completed');
+        expect(CARBONIQ_ANALYTICS_EVENTS).toContain('ai_insight_generated');
+        expect(CARBONIQ_ANALYTICS_EVENTS).toContain('story_app_link_copied');
+        expect(CARBONIQ_ANALYTICS_EVENTS).toHaveLength(16);
+        expect(CARBONIQ_ANALYTICS_EVENTS.every((eventName) => /^[a-z0-9_]+$/.test(eventName))).toBe(true);
+    });
+
+    it('returns coarse footprint bands instead of exact footprint values', () => {
+        expect(getFootprintBand(2999)).toBe('low');
+        expect(getFootprintBand(3000)).toBe('medium');
+        expect(getFootprintBand(6000)).toBe('high');
+        expect(getFootprintBand(10000)).toBe('very_high');
+        expect(getFootprintBand(Number.NaN)).toBe('low');
+    });
+
+    it('normalizes category and param values to safe analytics metadata', () => {
+        expect(getSafeCategory('transport')).toBe('transport');
+        expect(getSafeCategory('energy')).toBe('home_energy');
+        expect(getSafeCategory('home_energy')).toBe('home_energy');
+        expect(getSafeCategory('private-category')).toBe('unknown');
+
+        expect(sanitizeAnalyticsParams({
+            mode: 'demo',
+            streak: 3,
+            active: true,
+            omittedNull: null,
+            omittedUndefined: undefined,
+        })).toEqual({
+            mode: 'demo',
+            streak: 3,
+            active: true,
+        });
+    });
+
+    it('does not throw when analytics is unavailable or unconfigured', () => {
+        expect(() => trackCarbonIQEvent('app_loaded', {
+            deployment: 'firebase_hosting',
+            project: 'carboniq',
+        })).not.toThrow();
     });
 });

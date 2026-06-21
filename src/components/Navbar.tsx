@@ -1,4 +1,5 @@
 import { useAppStore } from '../store/useAppStore';
+import { trackCarbonIQEvent } from '../utils/analytics';
 import { Leaf, BarChart3, Target, Trophy, BookOpen, Home } from 'lucide-react';
 
 const NAV_ITEMS = [
@@ -16,6 +17,7 @@ export default function Navbar() {
 
     const goHome = () => setPage('landing');
     const startOver = () => {
+        trackCarbonIQEvent('quiz_started', { source: 'restart' });
         resetQuiz();
         setPage('quiz');
     };

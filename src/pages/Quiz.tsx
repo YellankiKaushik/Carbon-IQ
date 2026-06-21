@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { QUIZ_QUESTIONS } from '../utils/quizData';
+import { getFootprintBand, getSafeCategory, trackCarbonIQEvent } from '../utils/analytics';
 import { ArrowLeft, ArrowRight, Loader2, AlertCircle, Home } from 'lucide-react';
 
 export default function Quiz() {
@@ -81,7 +82,11 @@ export default function Quiz() {
         setValidationError('');
         setQuizSubmitting(true);
         try {
-            calculateQuizFootprint();
+            const footprint = calculateQuizFootprint();
+            trackCarbonIQEvent('quiz_completed', {
+                largest_category: getSafeCategory(footprint.biggest_category),
+                total_footprint_band: getFootprintBand(footprint.total_kg_co2_year),
+            });
             setPage('dashboard');
             // Generate insight asynchronously
             await generateInsight();

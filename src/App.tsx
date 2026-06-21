@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { useAppStore } from './store/useAppStore';
 import Navbar from './components/Navbar';
+import { trackCarbonIQEvent } from './utils/analytics';
 
 const Landing = lazy(() => import('./pages/Landing'));
 const Quiz = lazy(() => import('./pages/Quiz'));
@@ -14,6 +15,10 @@ function App() {
 
     useEffect(() => {
         hydrate();
+        trackCarbonIQEvent('app_loaded', {
+            deployment: 'firebase_hosting',
+            project: 'carboniq',
+        });
     }, []);
 
     const renderPage = () => {

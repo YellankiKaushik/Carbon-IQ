@@ -6,7 +6,7 @@ CarbonIQ is a personal carbon footprint awareness platform built for PromptWars 
 
 The product is designed for people who care about climate action but do not know where to begin. Many sustainability tools either stop at a number or overwhelm users with generic advice. CarbonIQ takes a different product stance: it translates awareness into one focused action through the One Lever principle.
 
-CarbonIQ uses a frontend-first Vite, React, TypeScript, Tailwind CSS, Recharts, localStorage, and Firebase Hosting stack. Its AI layer attempts Gemini first, falls back to OpenRouter if Gemini is unavailable or rate-limited, and finally falls back to deterministic static insight logic so the core user experience remains stable.
+CarbonIQ uses a frontend-first Vite, React, TypeScript, Tailwind CSS, Recharts, localStorage, Firebase Hosting, and Google Analytics for Firebase stack. Its AI layer attempts Gemini first, falls back to OpenRouter if Gemini is unavailable or rate-limited, and finally falls back to deterministic static insight logic so the core user experience remains stable. Firebase Analytics captures safe product-level events to understand key interactions such as quiz completion, demo dashboard usage, challenge engagement, and story-card sharing behavior.
 
 The live product is deployed on Firebase Hosting:
 
@@ -200,6 +200,7 @@ CarbonIQ works as a guided product experience from first impression to shareable
 | Check-in | Track streak and estimated saved CO2 | User gets progress feedback |
 | Leaderboard | Add sample community motivation | User sees ranking by improvement |
 | Story card | Create shareable proof of progress | User can communicate their action socially |
+| Firebase Analytics | Track safe product-level interactions | Builder can learn which flow moments users reach without logging personal data |
 
 ## 8. Full User Journey
 
@@ -648,6 +649,7 @@ Key product improvements included:
 - community sample snapshot,
 - challenge progress panel,
 - polished story card and social caption,
+- safe Firebase Analytics event tracking for demo, quiz, dashboard, challenge, leaderboard, and story-card interactions,
 - mobile responsiveness improvements,
 - tests for the key business logic,
 - Firebase Hosting deployment.
@@ -691,7 +693,7 @@ These limitations are not failures of the MVP. They are responsible boundaries f
 - Add optional authentication.
 - Improve the carbon model with region-specific factors.
 - Add more One Lever challenge types.
-- Add simple analytics for demo and usage flows.
+- Expand analytics into deeper funnel reporting while keeping the no-PII telemetry boundary.
 - Improve share links and story-card templates.
 
 ### Medium-term improvements

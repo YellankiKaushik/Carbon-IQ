@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useAppStore } from '../store/useAppStore';
+import { trackCarbonIQEvent } from '../utils/analytics';
 import {
     Leaf,
     ArrowRight,
@@ -15,6 +17,15 @@ import {
 
 export default function Landing() {
     const { setPage, loadDemoState } = useAppStore();
+
+    useEffect(() => {
+        trackCarbonIQEvent('landing_viewed');
+    }, []);
+
+    const startQuiz = () => {
+        trackCarbonIQEvent('quiz_started', { source: 'landing' });
+        setPage('quiz');
+    };
 
     const steps = [
         { icon: BarChart3, label: 'Answer a lifestyle quiz', desc: 'Seven focused questions across transport, food, energy, shopping, and travel.' },
@@ -52,7 +63,7 @@ export default function Landing() {
 
                         <div className="flex flex-col sm:flex-row gap-3 mb-4">
                             <button
-                                onClick={() => setPage('quiz')}
+                                onClick={startQuiz}
                                 className="w-full sm:w-auto min-h-12 px-7 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2 text-base"
                             >
                                 Calculate Your CarbonIQ
